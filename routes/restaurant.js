@@ -23,14 +23,23 @@ restaurantRouter.get("/:id", async (req, res) => {
     res.send(myJsonContent);
 })
 
-restaurantRouter.post("/", async (req, res) => {
-    try {
-        await Restaurant.create(req.body);
-        let myRestaurants = await Restaurant.findAll();
-        res.status(201).send(myRestaurants);
-    } catch (error) {
-        res.status(500).send({err: error.message})
-    }
+restaurantRouter.post("/", [
+    check("name").not().isEmpty().trim(),
+    check("location").not().isEmpty().trim(),
+    check("cuisine").not().isEmpty().trim()], 
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(500).json({error: errors.array()})
+        } else {
+            try {
+                await Restaurant.create(req.body);
+                let myRestaurants = await Restaurant.findAll();
+                res.status(201).send(myRestaurants);
+            } catch (error) {
+                res.status(500).send({err: error.message})
+            }
+        }
 })
 
 restaurantRouter.put("/:id", async (req, res) => {
